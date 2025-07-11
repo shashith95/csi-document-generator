@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ENVIRONMENT_CONFIG, EnvironmentConfig } from './config/environment-config';
 import { firstValueFrom, Observable } from 'rxjs';
-import { ToastrService } from 'ngx-toastr';
 import * as htmlToImage from 'html-to-image';
 import { CustomPrinterService } from './services/custom-printer.service';
 import { DocumentTypesEnum } from './constants/document-types.enum';
 import * as _ from 'lodash';
 import { ResolvedDocumentResponse } from './models/resolved-document-response';
+import { MessageService } from 'primeng/api';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +15,8 @@ import { ResolvedDocumentResponse } from './models/resolved-document-response';
 export class CsiDocumentGeneratorLibService {
   BASE_URL: string;
   constructor(@Inject(ENVIRONMENT_CONFIG) private readonly config: EnvironmentConfig,
-              private readonly toastr: ToastrService,
               private readonly printerService: CustomPrinterService,
+              private readonly messageService: MessageService,
               private readonly http: HttpClient) {
     this.BASE_URL = this.config?.apiBaseUrl || 'https://dev.cloudsolutions.com.sa/csi-api';
   }
@@ -32,26 +32,24 @@ export class CsiDocumentGeneratorLibService {
    */
   public async documentPrint(documentId: string, apiContext: any, headers: any, isDocumentPreviewEnabled: boolean = false): Promise<void> {
     if (!documentId) {
-      this.toastr.error("No document id found. Please provide a valid document id.", "Error!");
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No document id found. Please provide a valid document id.' });
     }
 
     if (!headers) {
-      this.toastr.error("No headers found. Please provide a valid headers.", "Error!");
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No headers found. Please provide a valid headers.' });
     }
 
     let resolvedDocumentResponse: ResolvedDocumentResponse;
     try {
-      resolvedDocumentResponse = await firstValueFrom(
-        this.getResolvedDocumentById(documentId, apiContext, headers)
-      );
+      resolvedDocumentResponse = await firstValueFrom(this.getResolvedDocumentById(documentId, apiContext, headers));
     } catch (error) {
       console.error(`Error occurred while fetching resolved document by id: ${documentId}`, error);
-      this.toastr.error(`Error occurred while fetching resolved document by id: ${documentId}`);
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Error occurred while fetching resolved document by id: ${documentId}` });
       return;
     }
 
     if (!resolvedDocumentResponse) {
-      this.toastr.error(`Document not found for ID: ${documentId}. Please check your inputs!`);
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Document not found for ID: ${documentId}. Please check your inputs!` });
       return;
     }
 
@@ -88,7 +86,7 @@ export class CsiDocumentGeneratorLibService {
     divElement.innerHTML = resolvedHtml;
 
     if (!options) {
-      this.toastr.error(`Document options are not available for document id: ${documentId}`);
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Document options are not available for document id: ${documentId}` });
     }
 
     const viewportSizingTypeWidth = options.viewportSizingTypeWidth ?? 'px';
@@ -143,19 +141,15 @@ export class CsiDocumentGeneratorLibService {
     if (printerVersionData) {
       if (printerVersionData.latestVersion > printerVersionData.currentVersion && printerVersionData.mandatoryVersion) {
         // Display an alert and stop the printing process
-        this.toastr.error(
-          `Printing process stopped. Printer update to version ${printerVersionData.latestVersion} is mandatory.`,
-          "Error"
-        );
+        this.messageService.add({ severity: 'error', summary: 'Error',
+          detail: `Printing process stopped. Printer update to version ${printerVersionData.latestVersion} is mandatory.` });
         return;
       } else if (printerVersionData.latestVersion > printerVersionData.currentVersion) {
         // Check if warning message was sent
         if (!localStorage.getItem("printerUpdateWarningSent")) {
           // Display an alert only
-          this.toastr.warning(
-            `Printer update to version ${printerVersionData.latestVersion} is recommended`,
-            "Warning"
-          );
+          this.messageService.add({ severity: 'error', summary: 'Error',
+            detail: `Printer update to version ${printerVersionData.latestVersion} is recommended` });
           localStorage.setItem("printerUpdateWarningSent", "true");
         }
       }
@@ -189,7 +183,7 @@ export class CsiDocumentGeneratorLibService {
    * @param headers - HTTP headers to use in the request.
    * @returns An Observable containing the resolved document response.
    */
-  getResolvedDocumentById(documentId: string | undefined, apiContext: any, headers: any): Observable<any> {
+  private getResolvedDocumentById(documentId: string | undefined, apiContext: any, headers: any): Observable<any> {
     console.log(`Base URL: ${this.BASE_URL}`)
     const config = {
       headers: { ...headers }

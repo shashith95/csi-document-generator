@@ -1,13 +1,19 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
-import { provideToastr } from 'ngx-toastr';
+
 import {
   provideEnvironmentConfig
 } from '../../projects/csi-document-generator-lib/src/lib/config/environment-config.provider';
+import Aura from '@primeng/themes/aura';
 import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { providePrimeNG } from 'primeng/config';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +22,19 @@ export const appConfig: ApplicationConfig = {
     provideEnvironmentConfig({
       apiBaseUrl: environment.apiBaseUrl,
     }),
-    provideToastr(),
     provideHttpClient(),
+    provideAnimations(),
+    provideAnimationsAsync(),
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: '.my-app-dark'
+        }
+      },
+
+    }),
+    importProvidersFrom(ToastModule),
+    MessageService
   ]
 };

@@ -1,15 +1,24 @@
 import { Component } from '@angular/core';
 import {
-  CsiDocumentGeneratorLibComponent
-} from '../../../projects/csi-document-generator-lib/src/lib/csi-document-generator-lib.component';
+  CsiDocumentGeneratorLibService
+} from '../../../projects/csi-document-generator-lib/src/lib/csi-document-generator-lib.service';
+import { Button } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CsiDocumentGeneratorLibComponent],
+  imports: [
+    Button, ToastModule
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent {
+
+  constructor(public csiDocumentGeneratorLibService:CsiDocumentGeneratorLibService,
+              private messageService: MessageService) {
+  }
   documentId: string = '653fc3fc57807e10c44fb390';
   apiContext: any = {
     "patientPomrId": 38478,
@@ -88,4 +97,7 @@ export class DashboardComponent {
     'x-user': '4000',
   }
 
+  printDocument() {
+    this.csiDocumentGeneratorLibService.documentPrint(this.documentId, this.apiContext, this.headers).then()
+  }
 }
