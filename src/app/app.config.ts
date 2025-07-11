@@ -7,6 +7,7 @@ import { provideToastr } from 'ngx-toastr';
 import {
   provideEnvironmentConfig
 } from '../../projects/csi-document-generator-lib/src/lib/config/environment-config.provider';
+import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,8 +15,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideEnvironmentConfig({
       apiBaseUrl: environment.apiBaseUrl,
-      featureToggleX: true
     }),
-    provideToastr()
+    provideToastr(),
+    provideHttpClient(),
   ]
 };

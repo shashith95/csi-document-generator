@@ -1,6 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
-import { CsiDocumentGeneratorLibService } from './csi-document-generator-lib.service';
-import { ToastrService } from 'ngx-toastr';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 @Component({
   selector: 'csi-document-generator-lib',
@@ -14,24 +12,14 @@ export class CsiDocumentGeneratorLibComponent implements OnInit, OnDestroy {
   @Input() options: any | undefined;
   @Input() headers: any | undefined;
 
-  constructor(private readonly csiDocumentGeneratorLibService: CsiDocumentGeneratorLibService,
-              private readonly toastr: ToastrService) {
+  constructor() {
   }
 
   ngOnInit(): void {
-    if (!this.documentId) {
-      this.toastr.error("No document id found. Please provide a valid document id.", "Error!");
-    }
-
-    if (!this.headers) {
-      this.toastr.error("No headers found. Please provide a valid headers.", "Error!");
-    }
-
-    this.csiDocumentGeneratorLibService.getResolvedDocumentById(this.documentId, this.apiContext, this.headers);
+    console.log(`Csi Document Generator Lib Works`);
   }
 
   ngOnDestroy(): void {
     console.log('ngOnDestroy');
   }
-
 }
